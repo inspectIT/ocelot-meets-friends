@@ -1,0 +1,26 @@
+instances:
+# The prometheus endpoint to query from
+  - prometheus_url: http://config-server:9096/metrics
+    namespace: "ocelot"
+    metrics:
+      - "*"
+  - prometheus_url: http://discovery-server:9095/metrics
+    namespace: "ocelot"
+    metrics:
+      - "*"
+  - prometheus_url: http://customers-service:9091/metrics
+    namespace: "ocelot"
+    metrics:
+      - "*"
+  - prometheus_url: http://visits-service:9092/metrics
+    namespace: "ocelot"
+    metrics:
+      - "*"
+  - prometheus_url: http://vets-service:9093/metrics
+    namespace: "ocelot"
+    metrics:
+      - "*"
+  - prometheus_url: http://api-gateway:9094/metrics
+    namespace: "ocelot"
+    metrics:
+      - "*"

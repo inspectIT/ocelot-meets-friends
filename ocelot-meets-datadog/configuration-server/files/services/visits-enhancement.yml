@@ -1,0 +1,47 @@
+inspectit:
+  instrumentation:
+    scopes:
+      s_create_visit:
+        type: 
+          name: org.springframework.samples.petclinic.visits.web.VisitResource
+        methods:
+          - name: create
+            matcher-mode: STARTS_WITH
+    
+    rules:
+      r_extract_pet_type:
+        scopes:
+          s_create_visit: true
+        tracing:
+          start-span: true
+          attributes:
+            pet-type: pet_type
+            resource: simple_method_name
+        metrics:
+          '[visits]':
+            value: 1
+            data-tags:
+              pet_type: pet_type
+        entry:
+          pet:
+            action: string_concat_3
+            data-input:
+              a: pet_type
+              c: pet_type
+            constant-input:
+              b: " "
+          simple_method_name:
+            action: a_get_simple_method_name
+          
+            
+  metrics:
+    definitions:
+      '[visits]':
+        type: LONG
+        unit: count
+        description: "The number of visits."
+        views:
+          '[visits/count]':
+            aggregation: COUNT
+            tags:
+              pet_type : true
