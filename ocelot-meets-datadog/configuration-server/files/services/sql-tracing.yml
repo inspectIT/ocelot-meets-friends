@@ -1,0 +1,61 @@
+inspectit:
+  instrumentation:  
+  
+    scopes:
+      hsqldb_prepared_statement_execute:
+        type:
+          name: org.hsqldb.jdbc.JDBCPreparedStatement
+        methods:
+          - name: execute
+            matcher-mode: STARTS_WITH
+    
+    actions:
+      # Extracts the SQL from a PreparedStatement for HSQLDB
+      hsqldb_prepared_statement_get_sql:
+        imports:
+          - org.hsqldb.jdbc
+          - java.lang.reflect
+        input:
+          _this: JDBCPreparedStatement
+          _class: Class        
+        value-body: |
+          Field sqlField = _class.getDeclaredField("sql");
+          sqlField.setAccessible(true);
+          return sqlField.get(_this); 
+          
+    rules:    
+      # We also trace JDBC calls including their target database
+      servicegraph_record_jdbc_calls:
+        tracing:
+          start-span: true
+          attributes:
+            'sql.database': db_name
+            'dd_resource': sql
+            'dd_service': db_name
+            'dd_type': span_type
+          start-span-conditions:
+            only-if-true: servicegraph_is_entry
+        entry:
+          db_name:
+            action: get_jdbc_statement_connection_name
+          span_type:
+            action: set
+            constant-input: {value: "sql"}
+            
+      # Extract the sql and add it to the trace
+      hsqldb_get_prep_statement_sql:
+        scopes:
+          hsqldb_prepared_statement_execute: true
+        tracing:
+          attributes:
+            'component': component_type
+            'span.kind': span_kind
+        entry:
+          sql:
+            action: hsqldb_prepared_statement_get_sql
+          component_type:
+            action: set
+            constant-input: {value: "java-jdbc-prepared_statement"}
+          span_kind:
+            action: set
+            constant-input: {value: "client"}

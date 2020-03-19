@@ -1,0 +1,179 @@
+inspectit:
+  tracing:
+    auto-tracing:
+      frequency: 10ms
+  instrumentation:  
+    data:
+      get_input_stream_invoked:
+        down-propagation: JVM_LOCAL
+    
+    actions:
+      string_concat_3:
+        input:
+          a: String
+          b: String
+          c: String
+        value: new StringBuilder(a).append(b).append(c).toString()
+      a_get_simple_method_name:
+        input:
+          _methodName: String
+          _class: Class
+        value: new StringBuilder(_class.getSimpleName()).append('.').append(_methodName).toString()
+            
+    rules:    
+      # use the existing rules from the default configuration but enable tracing
+      http_server_servlet_api:
+        tracing:
+          start-span: true
+          name: c_servlet_request
+          kind: SERVER
+          start-span-conditions:
+            only-if-true: http_is_entry
+          attributes:
+            dd_resource: resource_name
+            dd_type: span_type
+            'http.method': http_method
+            'http.status_code': http_status
+            'dd_metric__dd1.sr.eausr': dd_sampling_rate
+            pet-type: pet_type
+            language: jvm
+            env: demo
+          auto-trace: true
+        entry:
+          span_name:
+            action: string_concat_3
+            data-input:
+              a: http_method
+              c: http_raw_path
+            constant-input:
+              b: " "
+          resource_name:
+            action: string_replace_all
+            constant-input: { regex: "\\/\\d+(?=\\/|$)" , replacement: "/{id}"}
+            data-input: { string: span_name}
+            only-if-not-null: span_name
+          span_type:
+            action: set
+            constant-input: {value: "web"}
+          dd_sampling_rate:
+            action: set
+            constant-input: {value: 1.0}
+          jvm:
+            action: set
+            constant-input: {value: "jvm"}
+          demo:
+            action: set
+            constant-input: {value: "demo"}
+          c_servlet_request:
+            action: set
+            constant-input: {value: "servlet.request"}
+
+      http_client_apache_client:
+        tracing:
+          start-span: true
+          name: span_name
+          kind: CLIENT
+          start-span-conditions:
+            only-if-true: http_is_entry
+          attributes:
+            dd_resource: resource_name
+            dd_type: span_type
+        entry:
+          span_name:
+            action: string_concat_3
+            data-input:
+              a: http_method
+              c: http_raw_path
+            constant-input:
+              b: " "
+          resource_name:
+            action: string_replace_all
+            constant-input: { regex: "\\/\\d+(?=\\/|$)" , replacement: "/{id}"}
+            data-input: { string: span_name}
+            only-if-not-null: span_name
+          span_type:
+            action: set
+            constant-input: {value: "web"}
+      
+      httpurlconnection_tracing_start:
+        scopes:
+          httpurlconnection_connect: true
+          httpurlconnection_getOutputStream: true
+        tracing:
+          auto-trace: false
+          start-span: true
+          continue-span: span_obj
+          store-span: span_obj
+          end-span: false
+          name: span_name
+          kind: CLIENT
+        entry:            
+          span_obj:
+            action: read_attachment_on_this
+            constant-input: {key: "span"}
+          http_raw_path: 
+            action: httpurlconnection_get_path
+          http_method: 
+            action: httpurlconnection_get_method
+          span_name:
+            action: string_concat_3
+            data-input:
+              a: http_method
+              c: http_raw_path
+            constant-input:
+              b: " "
+        post-entry:
+          span_obj:
+            action: replace_attachment_on_this
+            constant-input: {key: "span"}
+            data-input: {value: span_obj}
+            
+      httpurlconnection_tracing_end:
+        scopes:
+          httpurlconnection_getInputStream: true
+        tracing:
+          auto-trace: false
+          start-span: true
+          continue-span: span_obj
+          store-span: span_obj
+          end-span: true
+          continue-span-conditions:
+            only-if-true: httpurlconn_get_is_entry
+          start-span-conditions:
+            only-if-true: httpurlconn_get_is_entry
+          name: span_name
+          kind: CLIENT
+          attributes:
+            dd_resource: resource_name
+            dd_type: span_type
+        entry:
+          httpurlconn_get_is_entry:
+            action: test_and_set_this_marker
+            constant-input: {marker: "get_input_stream_invoked"}
+          span_obj:
+            action: read_attachment_on_this
+            constant-input: {key: "span"}
+          http_raw_path: 
+            action: httpurlconnection_get_path
+          http_method: 
+            action: httpurlconnection_get_method
+          span_name:
+            action: string_concat_3
+            data-input:
+              a: http_method
+              c: http_raw_path
+            constant-input:
+              b: " "
+          resource_name:
+            action: string_replace_all
+            constant-input: { regex: "\\/\\d+(?=\\/|$)" , replacement: "/{id}"}
+            data-input: { string: span_name}
+            only-if-not-null: span_name
+          span_type:
+            action: set
+            constant-input: {value: "web"}
+        post-entry:
+          span_obj:
+            action: replace_attachment_on_this
+            constant-input: {key: "span"}
+            data-input: {value: span_obj}
