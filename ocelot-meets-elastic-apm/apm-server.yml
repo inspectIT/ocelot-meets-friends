@@ -1,0 +1,18 @@
+apm-server:
+  hosts: ["apm-server:8200"]
+  rum:
+    enabled: true
+  jaeger:
+    http:
+      enabled: true
+      host: "apm-server:14268"
+
+logging:
+  level: debug
+output:
+  elasticsearch:
+    hosts: elasticsearch:9200
+
+queue.mem.events: 4096
+
+max_procs: 4
