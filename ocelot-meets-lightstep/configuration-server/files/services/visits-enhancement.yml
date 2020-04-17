@@ -1,0 +1,18 @@
+inspectit:
+  instrumentation:
+    scopes:
+      s_create_visit:
+        type: 
+          name: org.springframework.samples.petclinic.visits.web.VisitResource
+        methods:
+          - name: create
+            matcher-mode: STARTS_WITH
+    
+    rules:
+      r_extract_pet_type:
+        scopes:
+          s_create_visit: true
+        tracing:
+          start-span: true
+          attributes:
+            pet-type: pet_type
