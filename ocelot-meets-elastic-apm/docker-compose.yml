@@ -1,6 +1,7 @@
 ---
 version: '2'
 services:
+
   agent:
     image: inspectit/inspectit-ocelot-agent:ocelot-meets-friends
     container_name: agent
@@ -33,7 +34,7 @@ services:
     environment:
       - INSPECTIT_SERVICE_NAME=config-server
       - INSPECTIT_CONFIG_HTTP_URL=http://ocelot-config-server:8090/api/v1/agent/configuration
-      - INSPECTIT_EXPORTERS_METRICS_PROMETHEUS_PORT=9096
+      - INSPECTIT_EXPORTERS_METRICS_PROMETHEUS_PORT=8889
     mem_limit: 512M
     entrypoint: ["sh", "-c","
       java -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -Djava.security.egd=file:/dev/./urandom
@@ -43,14 +44,13 @@ services:
       - agent-vol:/agent
     ports:
       - 8888:8888
-      - 9096:9096
+      - 8889
     networks:
       - apm
     labels:
-      co.elastic.metrics/module: Prometheus
+      co.elastic.metrics/module: prometheus
       co.elastic.metrics/period: 15s
-      co.elastic.metrics/hosts: "$${data.host}:9096"
-
+      co.elastic.metrics/hosts: '$${data.container.name}:$${data.port}'
 
   discovery-server:
     image: inspectit/spring-petclinic-discovery-server:ocelot-meets-friends
@@ -58,7 +58,6 @@ services:
     environment:
       - INSPECTIT_SERVICE_NAME=discovery-server
       - INSPECTIT_CONFIG_HTTP_URL=http://ocelot-config-server:8090/api/v1/agent/configuration
-      - INSPECTIT_EXPORTERS_METRICS_PROMETHEUS_PORT=9095
     mem_limit: 512M
     depends_on:
       - ocelot-config-server
@@ -73,13 +72,13 @@ services:
       - agent-vol:/agent
     ports:
       - 8761:8761
-      - 9095:9095
+      - 8888
     networks:
       - apm
     labels:
-      co.elastic.metrics/module: Prometheus
+      co.elastic.metrics/module: prometheus
       co.elastic.metrics/period: 15s
-      co.elastic.metrics/hosts: "$${data.host}:9095"
+      co.elastic.metrics/hosts: '$${data.container.name}:$${data.port}'
 
   customers-service:
     image: inspectit/spring-petclinic-customers-service:ocelot-meets-friends
@@ -87,13 +86,13 @@ services:
     environment:
       - INSPECTIT_SERVICE_NAME=customers-service
       - INSPECTIT_CONFIG_HTTP_URL=http://ocelot-config-server:8090/api/v1/agent/configuration
-      - INSPECTIT_EXPORTERS_METRICS_PROMETHEUS_PORT=9091
     mem_limit: 512M
     depends_on:
       - ocelot-config-server
       - agent
       - config-server
       - discovery-server
+      - metricbeat
     entrypoint: ["sh", "-c","
       ./dockerize -wait=tcp://discovery-server:8761 -timeout=120s -- &&
       java -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -Djava.security.egd=file:/dev/./urandom
@@ -103,13 +102,13 @@ services:
       - agent-vol:/agent
     ports:
       - 8081:8081
-      - 9091:9091
+      - 8888
     networks:
       - apm
     labels:
-      co.elastic.metrics/module: Prometheus
+      co.elastic.metrics/module: prometheus
       co.elastic.metrics/period: 15s
-      co.elastic.metrics/hosts: "$${data.host}:9091"
+      co.elastic.metrics/hosts: '$${data.container.name}:$${data.port}'
 
   visits-service:
     image: inspectit/spring-petclinic-visits-service:ocelot-meets-friends
@@ -117,7 +116,6 @@ services:
     environment:
       - INSPECTIT_SERVICE_NAME=visits-service
       - INSPECTIT_CONFIG_HTTP_URL=http://ocelot-config-server:8090/api/v1/agent/configuration
-      - INSPECTIT_EXPORTERS_METRICS_PROMETHEUS_PORT=9092
     mem_limit: 512M
     depends_on:
       - ocelot-config-server
@@ -133,13 +131,13 @@ services:
       - agent-vol:/agent
     ports:
       - 8082:8082
-      - 9092:9092
+      - 8888
     networks:
       - apm
     labels:
-      co.elastic.metrics/module: Prometheus
+      co.elastic.metrics/module: prometheus
       co.elastic.metrics/period: 15s
-      co.elastic.metrics/hosts: "$${data.host}:9092"
+      co.elastic.metrics/hosts: '$${data.container.name}:$${data.port}'
 
   vets-service:
     image: inspectit/spring-petclinic-vets-service:ocelot-meets-friends
@@ -147,7 +145,6 @@ services:
     environment:
       - INSPECTIT_SERVICE_NAME=vets-service
       - INSPECTIT_CONFIG_HTTP_URL=http://ocelot-config-server:8090/api/v1/agent/configuration
-      - INSPECTIT_EXPORTERS_METRICS_PROMETHEUS_PORT=9093
     mem_limit: 512M
     depends_on:
       - ocelot-config-server
@@ -163,13 +160,13 @@ services:
       - agent-vol:/agent
     ports:
       - 8083:8083
-      - 9093:9093
+      - 8888
     networks:
       - apm
     labels:
-      co.elastic.metrics/module: Prometheus
+      co.elastic.metrics/module: prometheus
       co.elastic.metrics/period: 15s
-      co.elastic.metrics/hosts: "$${data.host}:9093"
+      co.elastic.metrics/hosts: '$${data.container.name}:$${data.port}'
 
   api-gateway:
     image: inspectit/spring-petclinic-api-gateway:ocelot-meets-friends
@@ -177,7 +174,6 @@ services:
     environment:
       - INSPECTIT_SERVICE_NAME=api-gateway
       - INSPECTIT_CONFIG_HTTP_URL=http://ocelot-config-server:8090/api/v1/agent/configuration
-      - INSPECTIT_EXPORTERS_METRICS_PROMETHEUS_PORT=9094
     mem_limit: 512M
     depends_on:
       - ocelot-config-server
@@ -193,13 +189,13 @@ services:
       - agent-vol:/agent
     ports:
       - 8080:8080
-      - 9094:9094
+      - 8888
     networks:
       - apm
     labels:
-      co.elastic.metrics/module: Prometheus
+      co.elastic.metrics/module: prometheus
       co.elastic.metrics/period: 15s
-      co.elastic.metrics/hosts: "$${data.host}:9094"
+      co.elastic.metrics/hosts: '$${data.container.name}:$${data.port}'
 
   load:
     image: inspectit/spring-petclinic-load:ocelot-meets-friends
@@ -210,9 +206,9 @@ services:
   apm-server:
     image: elastic/apm-server:7.6.2
     ports:
-        - "8200:8200"
-        - "8201:8200"
-        - "14268:14268"
+        - 8200:8200
+        - 8201:8200
+        - 14268:14268
     environment:
         - apm-server.host=0.0.0.0
     volumes:
@@ -222,11 +218,10 @@ services:
     depends_on:
       - elasticsearch
       - kibana
+
   elasticsearch:
       image: elasticsearch:7.6.2
-      # network_mode: "service:elasticsearch"
-      # volumes:
-      #     - ./elasticsearch/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+      container_name: elasticsearch
       environment:
           - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
           - discovery.type=single-node
@@ -239,8 +234,7 @@ services:
           - "9200:9200"
   kibana:
       image: elastic/kibana:7.6.2
-      # volumes:
-      #     - ./kibana.yml:/usr/share/kibana/config/kibana.yml
+      container_name: kibana
       ports:
         - "5601:5601"
       networks:
@@ -251,8 +245,15 @@ services:
           - ELASTICSEARCH_PASSWORD=password
       depends_on:
         - elasticsearch
-  metric-beat:
+
+  metricbeat:
     image: elastic/metricbeat:7.6.2
+    container_name: metricbeat
+    user: root
+    volumes:
+        - ./metricbeat.yml:/usr/share/metricbeat/metricbeat.yml:ro
+        - /var/run/docker.sock:/var/run/docker.sock:ro
+        - /var/lib/docker/containers:/var/lib/docker/containers:ro
     networks:
         - apm
     environment:
@@ -260,6 +261,7 @@ services:
         - output.elasticsearch.hosts=["elasticsearch:9200"]
     depends_on:
       - elasticsearch
+      - kibana
 
 volumes:
   agent-vol:
