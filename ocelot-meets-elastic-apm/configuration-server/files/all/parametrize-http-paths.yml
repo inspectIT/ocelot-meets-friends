@@ -9,7 +9,9 @@ inspectit:
           servletapi_filter_doFilter: true
           httpurlconnection_getInputStream: true
           apache_http_client_doExecute: true  
-        exit:
+          httpurlconnection_connect: true
+          httpurlconnection_getOutputStream: true
+        entry:
           parametrized_http_path:
             action: string_replace_all
             constant-input: { regex: "\\/\\d+(?=\\/|$)" , replacement: "/{id}"}

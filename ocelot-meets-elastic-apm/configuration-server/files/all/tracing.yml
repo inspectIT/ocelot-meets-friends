@@ -1,4 +1,8 @@
 inspectit:
+  tracing:
+    auto-tracing:
+      frequency: 10ms
+      
   instrumentation:  
     data:
       get_input_stream_invoked:
@@ -11,6 +15,11 @@ inspectit:
           b: String
           c: String
         value: new StringBuilder(a).append(b).append(c).toString()
+      a_get_simple_method_name:
+        input:
+          _methodName: String
+          _class: Class
+        value: new StringBuilder(_class.getSimpleName()).append('.').append(_methodName).toString()
             
     rules:    
       # use the existing rules from the default configuration but enable tracing
@@ -21,36 +30,46 @@ inspectit:
           kind: SERVER
           start-span-conditions:
             only-if-true: http_is_entry
+          attributes:
+            'http.method': http_method
+            'http.status_code': http_status
+            pet-type: pet_type
+          auto-trace: true
         entry:
           span_name:
             action: string_concat_3
             data-input:
               a: http_method
-              c: http_raw_path
+              c: parametrized_http_path
             constant-input:
               b: " "
-       
+
       http_client_apache_client:
         tracing:
           start-span: true
           name: span_name
           kind: CLIENT
           start-span-conditions:
-            only-if-true: http_is_entry   
+            only-if-true: http_is_entry
         entry:
           span_name:
             action: string_concat_3
             data-input:
               a: http_method
-              c: http_raw_path
+              c: parametrized_http_path
             constant-input:
               b: " "
+          span_type:
+            action: set
+            constant-input: {value: "web"}
+        
       
       httpurlconnection_tracing_start:
         scopes:
           httpurlconnection_connect: true
           httpurlconnection_getOutputStream: true
         tracing:
+          auto-trace: false
           start-span: true
           continue-span: span_obj
           store-span: span_obj
@@ -69,7 +88,7 @@ inspectit:
             action: string_concat_3
             data-input:
               a: http_method
-              c: http_raw_path
+              c: parametrized_http_path
             constant-input:
               b: " "
         post-entry:
@@ -82,6 +101,7 @@ inspectit:
         scopes:
           httpurlconnection_getInputStream: true
         tracing:
+          auto-trace: false
           start-span: true
           continue-span: span_obj
           store-span: span_obj
@@ -107,7 +127,7 @@ inspectit:
             action: string_concat_3
             data-input:
               a: http_method
-              c: http_raw_path
+              c: parametrized_http_path
             constant-input:
               b: " "
         post-entry:

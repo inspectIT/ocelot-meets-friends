@@ -8,6 +8,10 @@ inspectit:
         methods:
           - name: execute
             matcher-mode: STARTS_WITH
+            
+    data:
+      db_name: {down-propagation: NONE, is-tag: false}
+      sql: {down-propagation: NONE, is-tag: false}
     
     actions:
       # Extracts the SQL from a PreparedStatement for HSQLDB
@@ -30,7 +34,9 @@ inspectit:
           start-span: true
           attributes:
             'sql.database': db_name
-            'sql.query': sql
+            dd_service: db_name
+            dd_type: span_type
+            dd_resource: sql
           start-span-conditions:
             only-if-true: servicegraph_is_entry
         entry:
