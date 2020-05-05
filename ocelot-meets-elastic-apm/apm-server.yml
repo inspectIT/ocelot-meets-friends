@@ -7,8 +7,6 @@ apm-server:
       enabled: true
       host: "apm-server:14268"
 
-logging:
-  level: debug
 output:
   elasticsearch:
     hosts: elasticsearch:9200
