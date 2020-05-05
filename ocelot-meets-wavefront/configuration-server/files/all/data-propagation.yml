@@ -1,0 +1,7 @@
+inspectit:
+  instrumentation:  
+    data:
+      pet_type: 
+        up-propagation: GLOBAL
+        down-propagation: GLOBAL
+      
