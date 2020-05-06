@@ -50,7 +50,7 @@ services:
     labels:
       co.elastic.metrics/module: prometheus
       co.elastic.metrics/period: 15s
-      co.elastic.metrics/hosts: '$${data.container.name}:$${data.port}'
+      co.elastic.metrics/hosts: '$${data.container.name}:8889'
 
   discovery-server:
     image: inspectit/spring-petclinic-discovery-server:ocelot-meets-friends
@@ -78,7 +78,7 @@ services:
     labels:
       co.elastic.metrics/module: prometheus
       co.elastic.metrics/period: 15s
-      co.elastic.metrics/hosts: '$${data.container.name}:$${data.port}'
+      co.elastic.metrics/hosts: '$${data.container.name}:8888'
 
   customers-service:
     image: inspectit/spring-petclinic-customers-service:ocelot-meets-friends
@@ -108,7 +108,7 @@ services:
     labels:
       co.elastic.metrics/module: prometheus
       co.elastic.metrics/period: 15s
-      co.elastic.metrics/hosts: '$${data.container.name}:$${data.port}'
+      co.elastic.metrics/hosts: '$${data.container.name}:8888'
 
   visits-service:
     image: inspectit/spring-petclinic-visits-service:ocelot-meets-friends
@@ -137,7 +137,7 @@ services:
     labels:
       co.elastic.metrics/module: prometheus
       co.elastic.metrics/period: 15s
-      co.elastic.metrics/hosts: '$${data.container.name}:$${data.port}'
+      co.elastic.metrics/hosts: '$${data.container.name}:8888'
 
   vets-service:
     image: inspectit/spring-petclinic-vets-service:ocelot-meets-friends
@@ -166,7 +166,7 @@ services:
     labels:
       co.elastic.metrics/module: prometheus
       co.elastic.metrics/period: 15s
-      co.elastic.metrics/hosts: '$${data.container.name}:$${data.port}'
+      co.elastic.metrics/hosts: '$${data.container.name}:8888'
 
   api-gateway:
     image: inspectit/spring-petclinic-api-gateway:ocelot-meets-friends
@@ -195,7 +195,7 @@ services:
     labels:
       co.elastic.metrics/module: prometheus
       co.elastic.metrics/period: 15s
-      co.elastic.metrics/hosts: '$${data.container.name}:$${data.port}'
+      co.elastic.metrics/hosts: '$${data.container.name}:8888'
 
   load:
     image: inspectit/spring-petclinic-load:ocelot-meets-friends
