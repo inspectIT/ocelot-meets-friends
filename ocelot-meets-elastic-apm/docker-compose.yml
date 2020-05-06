@@ -205,6 +205,8 @@ services:
 
   apm-server:
     image: elastic/apm-server:7.6.2
+    command: apm-server -strict.perms=false -e
+    container_name: apm-server
     ports:
         - 8200:8200
         - 8201:8200
@@ -248,6 +250,7 @@ services:
 
   metricbeat:
     image: elastic/metricbeat:7.6.2
+    command: metricbeat -strict.perms=false -e
     container_name: metricbeat
     user: root
     volumes:
