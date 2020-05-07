@@ -1,0 +1,34 @@
+inspectit:
+  instrumentation:
+    scopes:
+      s_gateway_controller_validate_pet:
+        type: 
+          name: org.springframework.samples.petclinic.api.boundary.web.ApiGatewayController
+        methods:
+          - name: validatePet
+            matcher-mode: STARTS_WITH
+    
+    actions:
+      a_extract_pet_type:
+        imports:
+          - org.springframework.samples.petclinic.api.dto
+        input:
+          _arg0: PetDetails 
+        value-body: |
+          return _arg0.getType().getName();
+    
+    rules:
+      r_extract_pet_type:
+        scopes:
+          s_gateway_controller_validate_pet: true
+        tracing:
+          start-span: true
+          attributes:
+            pet-type: pet_type
+            resource: simple_method_name
+        entry:
+          pet_type:
+            action: a_extract_pet_type
+          simple_method_name:
+            action: a_get_simple_method_name
+            
